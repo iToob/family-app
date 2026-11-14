@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import "@fontsource-variable/bricolage-grotesque/index.css";
+@import "@fontsource-variable/public-sans/index.css";
+
+@theme {
+  --font-display: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Public Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-paper: #f5f7f4;
+  --color-surface: #ffffff;
+  --color-ink: #14201d;
+  --color-muted: #5b6b66;
+  --color-line: #dfe5e1;
+  --color-euc: #0e3b36;
+  --color-euc-700: #15514a;
+  --color-euc-100: #e3eeea;
+  --color-brass: #b8892b;
+  --color-brass-100: #f6ecd6;
+  --color-credit: #17845a;
+  --color-hold: #b45309;
+  --color-hold-100: #fdf0e1;
+  --color-danger: #b42318;
+  --color-danger-100: #fdecea;
+
+  --radius-panel: 14px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  font-feature-settings: "tnum" 1;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brass);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Form controls */
+.input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 16px; /* prevents iOS zoom */
+  line-height: 1.3;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--color-euc-700);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-euc-700) 18%, transparent);
+}
+textarea.input {
+  min-height: 5.5rem;
+}
+select.input {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--color-muted) 50%),
+    linear-gradient(135deg, var(--color-muted) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 55%, calc(100% - 13px) 55%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  border: 1px solid transparent;
+  transition: background-color 120ms, opacity 120ms;
+  white-space: nowrap;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--color-euc);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-euc-700);
+}
+.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-euc-100);
+}
+.btn-danger {
+  background: var(--color-surface);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, white);
+  color: var(--color-danger);
+}
+.btn-small {
+  padding: 0.35rem 0.8rem;
+  font-size: 14px;
+}
+
+/* The banknote: the one bold element. */
+.banknote {
+  position: relative;
+  overflow: hidden;
+  color: #f3f7f2;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(184, 137, 43, 0.28), transparent 55%),
+    linear-gradient(160deg, #134a43 0%, #0e3b36 55%, #0a2f2b 100%);
+  border-radius: 20px;
+}
+.banknote::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/guilloche.svg");
+  background-size: 340px 340px;
+  background-position: right -110px top -90px;
+  background-repeat: no-repeat;
+  opacity: 0.22;
+  pointer-events: none;
+}
+.banknote::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid rgba(243, 247, 242, 0.14);
+  border-radius: 14px;
+  pointer-events: none;
+}
+
+.panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+}
+.rows > * + * {
+  border-top: 1px solid var(--color-line);
+}
+
+details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.safe-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+
+.prose-charter h1 {
+  font-size: 1.2rem;
+  margin: 1.6rem 0 0.5rem;
+}
+.prose-charter p {
+  margin: 0.5rem 0;
+}
+.prose-charter ul {
+  list-style: disc;
+  padding-left: 1.2rem;
+  margin: 0.5rem 0;
+}
+.prose-charter li {
+  margin: 0.2rem 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
