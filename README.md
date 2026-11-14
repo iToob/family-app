@@ -19,11 +19,7 @@ You need a GitHub account, a [Vercel](https://vercel.com) account and a hosted P
    - `DATABASE_URL`: the Neon connection string
    - `SETUP_TOKEN`: a long random code you'll type once on the setup page
    - `CRON_SECRET`: another long random value (enables the daily billing job)
-5. **Create the tables.** On your computer, in this folder:
-   ```bash
-   npm install
-   DATABASE_URL="<your neon url>" npm run db:migrate
-   ```
+5. **Tables are created automatically.** Every build runs the database migrations first (safe to repeat), so there's nothing to run by hand.
 6. **Deploy** (Vercel does this on every push). Open your site. You'll land on **/setup**:
    enter the setup code, your household name, the exchange rate (default 10 Points = $1) and your own account.
 7. **Finish setup** on the checklist screen: add the other parent and each child (username plus a temporary password; they choose their own on first sign-in), add some jobs and marketplace items, then **Go live**.
