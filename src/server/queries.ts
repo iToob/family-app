@@ -181,7 +181,7 @@ export async function claimDetail(db: DB, householdId: string, claimId: string) 
 
 /** Everything awaiting a parent decision, in one list. */
 export async function approvalsInbox(db: DB, householdId: string) {
-  const jobs = await db
+  const jobsP = db
     .select({ claim: jobClaim, occ: jobOccurrence, member: householdMember })
     .from(jobClaim)
     .innerJoin(jobOccurrence, eq(jobClaim.occurrenceId, jobOccurrence.id))
@@ -189,44 +189,55 @@ export async function approvalsInbox(db: DB, householdId: string) {
     .innerJoin(householdMember, eq(jobClaim.memberId, householdMember.id))
     .where(and(eq(earningOpportunity.householdId, householdId), eq(jobClaim.status, "SUBMITTED")))
     .orderBy(jobClaim.updatedAt);
-  const proposals = await db
+  const proposalsP = db
     .select({ p: childProposal, member: householdMember })
     .from(childProposal)
     .innerJoin(householdMember, eq(childProposal.memberId, householdMember.id))
     .where(and(eq(childProposal.householdId, householdId), eq(childProposal.status, "PENDING")));
-  const purchases = await db
+  const purchasesP = db
     .select({ p: purchase, member: householdMember })
     .from(purchase)
     .innerJoin(householdMember, eq(purchase.memberId, householdMember.id))
     .where(and(eq(purchase.householdId, householdId), eq(purchase.status, "REQUESTED")));
-  const fulfilment = await db
+  const fulfilmentP = db
     .select({ p: purchase, member: householdMember })
     .from(purchase)
     .innerJoin(householdMember, eq(purchase.memberId, householdMember.id))
     .where(and(eq(purchase.householdId, householdId), eq(purchase.status, "AWAITING_FULFILMENT")));
-  const cashOuts = await db
+  const cashOutsP = db
     .select({ r: cashOutRequest, member: householdMember })
     .from(cashOutRequest)
     .innerJoin(householdMember, eq(cashOutRequest.memberId, householdMember.id))
     .where(and(eq(cashOutRequest.householdId, householdId), inArray(cashOutRequest.status, ["REQUESTED", "APPROVED"])));
-  const adjustments = await db
+  const adjustmentsP = db
     .select({ a: adjustmentRequest, member: householdMember })
     .from(adjustmentRequest)
     .innerJoin(householdMember, eq(adjustmentRequest.memberId, householdMember.id))
     .where(and(eq(adjustmentRequest.householdId, householdId), eq(adjustmentRequest.status, "PENDING")));
-  const disputes = await db
+  const disputesP = db
     .select({ d: dispute, member: householdMember })
     .from(dispute)
     .innerJoin(householdMember, eq(dispute.memberId, householdMember.id))
     .where(and(eq(dispute.householdId, householdId), eq(dispute.status, "OPEN")));
+  const [jobs, proposals, purchases, fulfilment, cashOuts, adjustments, disputes] = await Promise.all([
+    jobsP, proposalsP, purchasesP, fulfilmentP, cashOutsP, adjustmentsP, disputesP,
+  ]);
   return { jobs, proposals, purchases, fulfilment, cashOuts, adjustments, disputes };
 }
 
+/** Number of items awaiting a parent decision, in a single round trip (used in the nav badge on every page). */
 export async function inboxCount(db: DB, householdId: string) {
-  const i = await approvalsInbox(db, householdId);
-  return (
-    i.jobs.length + i.proposals.length + i.purchases.length + i.fulfilment.length + i.cashOuts.length + i.adjustments.length + i.disputes.length
-  );
+  const r = await db.execute<{ n: string }>(sql`
+    SELECT
+      (SELECT COUNT(*) FROM job_claim c JOIN job_occurrence o ON o.id = c.occurrence_id JOIN earning_opportunity e ON e.id = o.opportunity_id
+         WHERE e.household_id = ${householdId} AND c.status = 'SUBMITTED')
+    + (SELECT COUNT(*) FROM child_proposal WHERE household_id = ${householdId} AND status = 'PENDING')
+    + (SELECT COUNT(*) FROM purchase WHERE household_id = ${householdId} AND status IN ('REQUESTED','AWAITING_FULFILMENT'))
+    + (SELECT COUNT(*) FROM cash_out_request WHERE household_id = ${householdId} AND status IN ('REQUESTED','APPROVED'))
+    + (SELECT COUNT(*) FROM adjustment_request WHERE household_id = ${householdId} AND status = 'PENDING')
+    + (SELECT COUNT(*) FROM dispute WHERE household_id = ${householdId} AND status = 'OPEN') AS n
+  `);
+  return Number(r.rows[0].n);
 }
 
 /** Parent dashboard metrics. "Outstanding" is an indicator of commitments, not accounting advice. */
@@ -269,9 +280,7 @@ export async function economyOverview(db: DB, householdId: string, tz: string) {
 
 export async function childrenSummary(db: DB, householdId: string) {
   const kids = await children(db, householdId);
-  const out = [];
-  for (const k of kids) out.push({ member: k, wallet: await wallet(db, k.id) });
-  return out;
+  return Promise.all(kids.map(async (k) => ({ member: k, wallet: await wallet(db, k.id) })));
 }
 
 export async function memberSubscriptions(db: DB, memberId: string) {

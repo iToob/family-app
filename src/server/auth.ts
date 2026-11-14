@@ -10,8 +10,8 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { getDb } from "@/db";
-import { household, householdMember, loginAttempt, session, user } from "@/db/schema";
-import { type Actor, DomainError, getSettings } from "./core";
+import { economySetting, household, householdMember, loginAttempt, session, user } from "@/db/schema";
+import { type Actor, DomainError } from "./core";
 import { burnPasswordCheck, hashPassword, validatePassword, verifyPassword } from "./passwords";
 
 export const SESSION_COOKIE = "fe_session";
@@ -104,15 +104,16 @@ export const getSession = cache(async (): Promise<SessionInfo | null> => {
   if (!token) return null;
   const db = getDb();
   const rows = await db
-    .select({ s: session, u: user, m: householdMember, h: household })
+    .select({ s: session, u: user, m: householdMember, h: household, st: economySetting })
     .from(session)
     .innerJoin(user, eq(session.userId, user.id))
     .innerJoin(householdMember, eq(householdMember.userId, user.id))
     .innerJoin(household, eq(householdMember.householdId, household.id))
+    .innerJoin(economySetting, eq(economySetting.householdId, household.id))
     .where(and(eq(session.id, sha256(token)), gt(session.expiresAt, new Date()), isNull(householdMember.archivedAt)));
   const r = rows[0];
   if (!r) return null;
-  const settings = await getSettings(db, r.h.id);
+  const settings = r.st;
   return {
     actor: { householdId: r.h.id, memberId: r.m.id, role: r.m.role, displayName: r.m.displayName },
     userId: r.u.id,

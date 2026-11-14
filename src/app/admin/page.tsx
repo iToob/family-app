@@ -26,8 +26,9 @@ export default async function Dashboard() {
     openOccurrences(db, hid),
     marketplace(db, hid),
   ]);
-  let upcomingTotal = 0;
-  for (const k of kids) upcomingTotal += (await upcomingCharges(db, k.member.id, s.timezone, 7)).reduce((a, u) => a + u.points, 0);
+  const upcomingTotal = (await Promise.all(kids.map((k) => upcomingCharges(db, k.member.id, s.timezone, 7))))
+    .flat()
+    .reduce((a, u) => a + u.points, 0);
   const rate = o.centsPerPoint;
   const overBudget = o.weeklyBudget && o.earned_week + o.committed > o.weeklyBudget;
 
