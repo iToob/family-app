@@ -45,7 +45,7 @@ export default async function Settings() {
                 <option value="CHILD">Child</option>
               </select>
             </Field>
-            <Field label="Username"><input name="username" className="input" autoCapitalize="none" required /></Field>
+            <Field label="Username" hint="A simple name like ebony, or an email address."><input name="username" className="input" autoCapitalize="none" required /></Field>
             <Field label="Temporary password"><input name="password" className="input" required minLength={8} autoComplete="off" /></Field>
             <div className="sm:col-span-2"><Submit>Add person</Submit></div>
           </ActionForm>

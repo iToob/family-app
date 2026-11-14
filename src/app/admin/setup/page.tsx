@@ -57,7 +57,7 @@ export default async function Setup() {
                 <option value="CHILD">Child</option>
               </select>
             </Field>
-            <Field label="Username"><input name="username" className="input" autoCapitalize="none" required /></Field>
+            <Field label="Username" hint="A simple name like ebony, or an email address."><input name="username" className="input" autoCapitalize="none" required /></Field>
             <Field label="Temporary password" hint="They'll choose their own when they first sign in.">
               <input name="password" className="input" required minLength={8} autoComplete="off" />
             </Field>

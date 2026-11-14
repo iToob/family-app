@@ -29,7 +29,7 @@ export function validatePassword(pw: string) {
 }
 
 export function validateUsername(u: string) {
-  if (typeof u !== "string" || !/^[a-zA-Z0-9._-]{3,32}$/.test(u.trim())) {
-    throw new DomainError("Usernames are 3–32 letters, numbers, dots, dashes or underscores.");
+  if (typeof u !== "string" || !/^[a-zA-Z0-9._@+-]{3,64}$/.test(u.trim())) {
+    throw new DomainError("Usernames are 3–64 characters: letters, numbers, dots, dashes, underscores, or an email address.");
   }
 }
