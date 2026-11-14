@@ -12,7 +12,10 @@ export function LoginForm() {
         <input name="password" type="password" className="input" autoComplete="current-password" required />
       </Field>
       <Submit className="w-full">Sign in</Submit>
-      <p className="text-center text-sm text-muted">Forgotten your password? Ask a parent to reset it.</p>
+      <p className="text-center text-sm text-muted">
+        Forgotten your password? Ask a parent to reset it. Both parents locked out?{" "}
+        <a href="/recover" className="text-euc underline">Recover account</a>
+      </p>
     </ActionForm>
   );
 }

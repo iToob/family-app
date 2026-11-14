@@ -15,6 +15,7 @@ import * as jobs from "@/server/jobs";
 import * as market from "@/server/marketplace";
 import * as money from "@/server/money-ops";
 import * as hh from "@/server/household";
+import { recoverParentAccount } from "@/server/recovery";
 
 export type ActionState = { ok?: boolean; error?: string; message?: string; at?: number };
 
@@ -67,6 +68,16 @@ export async function loginAction(_: ActionState, fd: FormData): Promise<ActionS
     return toError(e);
   }
   redirect(dest);
+}
+
+export async function recoverAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  try {
+    if (s(fd, "password") !== s(fd, "confirm")) throw new DomainError("The passwords don't match.");
+    await recoverParentAccount({ code: s(fd, "code"), username: s(fd, "username"), password: s(fd, "password") });
+    return { ok: true, message: "Password reset. You can sign in now.", at: Date.now() };
+  } catch (e) {
+    return toError(e);
+  }
 }
 
 export async function logoutAction() {

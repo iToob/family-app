@@ -140,3 +140,34 @@ test("Cron endpoint requires the secret", async ({ request }) => {
   const ok = await request.get("/api/cron/maintenance", { headers: { authorization: "Bearer e2e-cron" } });
   expect(ok.status()).toBe(200);
 });
+
+test("Recovery: wrong code is refused; right code resets a parent password", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByRole("link", { name: "Recover account" }).click();
+  await page.fill("input[name=code]", "wrong-code-000000");
+  await page.fill("input[name=username]", "parent2");
+  await page.fill("input[name=password]", "brand-new-pass");
+  await page.fill("input[name=confirm]", "brand-new-pass");
+  await page.getByRole("button", { name: "Reset password" }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("isn't right");
+
+  await page.fill("input[name=code]", "e2e-recovery-code-123");
+  await page.fill("input[name=username]", "child16"); // children can't be recovered this way
+  await page.fill("input[name=password]", "brand-new-pass");
+  await page.fill("input[name=confirm]", "brand-new-pass");
+  await page.getByRole("button", { name: "Reset password" }).click();
+  await expect(page.locator("p[role=alert]")).toContainText("isn't right");
+
+  await page.fill("input[name=code]", "e2e-recovery-code-123");
+  await page.fill("input[name=username]", "parent2");
+  await page.fill("input[name=password]", "brand-new-pass");
+  await page.fill("input[name=confirm]", "brand-new-pass");
+  await page.getByRole("button", { name: "Reset password" }).click();
+  await expect(toast(page, "Password reset")).toBeVisible();
+
+  await page.goto("/login");
+  await page.fill("input[name=username]", "parent2");
+  await page.fill("input[name=password]", "brand-new-pass");
+  await page.click("button[type=submit]");
+  await page.waitForURL(/\/admin/);
+});

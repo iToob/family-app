@@ -87,7 +87,8 @@ To start a **clean live household** instead, don't seed. Just visit `/setup`. To
 - Logins are **rate limited** (5 failures per username or 20 per IP per 15 minutes).
 - **Kids don't need email.** A parent resets their password from the child's page. They get a temporary password and must choose a new one at next sign-in.
 - **A parent who's locked out** can be reset by the other parent the same way.
-- **Both parents locked out:** from a machine with the code and the database URL:
+- **Both parents locked out:** go to `/recover` (linked from the sign-in page), enter the `RECOVERY_TOKEN` from Vercel's Environment Variables, a parent username and a new password. Attempts are rate limited (5 per hour), audited, and every parent is notified. Without `RECOVERY_TOKEN` set, recovery is disabled.
+- **Last resort**, from a machine with the code and the database URL:
   ```bash
   DATABASE_URL="…" npm run admin:reset-password -- <username> <temporary-password>
   ```

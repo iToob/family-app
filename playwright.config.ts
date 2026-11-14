@@ -17,6 +17,6 @@ export default defineConfig({
     command: `npx next start -p ${PORT}`,
     port: PORT,
     reuseExistingServer: false,
-    env: { DATABASE_URL: E2E_DB, SETUP_TOKEN: "e2e-token", CRON_SECRET: "e2e-cron" },
+    env: { DATABASE_URL: E2E_DB, SETUP_TOKEN: "e2e-token", CRON_SECRET: "e2e-cron", RECOVERY_TOKEN: "e2e-recovery-code-123" },
   },
 });
