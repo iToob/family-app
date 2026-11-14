@@ -1,9 +1,10 @@
 /** Apply all pending SQL migrations in ./drizzle. Safe to run repeatedly. */
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { closeDb, getDb } from "../src/db";
+import { databaseUrl } from "../src/lib/db-url";
 
 async function main() {
-  if (!process.env.DATABASE_URL) {
+  if (!databaseUrl()) {
     // Lets the first build succeed before a database is connected; the next deploy migrates.
     console.warn("DATABASE_URL not set: skipping migrations.");
     return;

@@ -1,6 +1,7 @@
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
+import { databaseUrl } from "@/lib/db-url";
 
 export type DB = NodePgDatabase<typeof schema>;
 /** A transaction handle. All financial writes take one of these. */
@@ -10,8 +11,8 @@ export type DbOrTx = DB | Tx;
 const globalForDb = globalThis as unknown as { __fePool?: Pool; __feDb?: DB };
 
 function createPool() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is not set");
+  const url = databaseUrl();
+  if (!url) throw new Error("No database connection string found. Set DATABASE_URL (or connect a Neon database in Vercel).");
   const needsSsl = /sslmode=require/.test(url) || process.env.DATABASE_SSL === "true";
   return new Pool({
     connectionString: url,
