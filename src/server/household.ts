@@ -2,7 +2,7 @@
  * Household setup, members, participation, charter, settings, disputes, notifications
  * and scheduled maintenance.
  */
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, lt, sql } from "drizzle-orm";
 import type { DB, Tx } from "@/db";
 import {
   category,
@@ -12,6 +12,7 @@ import {
   economySetting,
   household,
   householdMember,
+  loginAttempt,
   notification,
   session,
   user,
@@ -194,6 +195,9 @@ export async function resetMemberPassword(db: DB, actor: Actor, memberId: string
     await tx.update(user).set({ passwordHash: hash, mustChangePassword: m.id !== actor.memberId }).where(eq(user.id, m.userId));
     await tx.delete(session).where(eq(session.userId, m.userId));
     await audit(tx, actor, "member.password_reset", "HouseholdMember", memberId);
+    if (m.role === "PARENT" && m.id !== actor.memberId) {
+      await notifyParents(tx, actor.householdId, `${actor.displayName} reset ${m.displayName}'s password`, "If this wasn't expected, check the audit log.", "/admin/economy/audit");
+    }
   });
 }
 
@@ -489,6 +493,8 @@ export async function runMaintenance(db: DB, householdId: string, now = new Date
     // Serialise concurrent maintenance runs for a household.
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${"maint:" + householdId}))`);
     await ensureAllOccurrences(tx, householdId, h.timezone, now);
+    // Keep login-attempt records only as long as rate limiting needs them (plus a margin).
+    await tx.delete(loginAttempt).where(lt(loginAttempt.createdAt, new Date(now.getTime() - 30 * 86_400_000)));
     await expireEntitlements(tx, householdId, now);
   });
   const billing = await processDueSubscriptions(db, householdId, now);

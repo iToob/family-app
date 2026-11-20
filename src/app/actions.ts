@@ -48,8 +48,8 @@ const opt = (fd: FormData, k: string) => s(fd, k) || null;
 const int = (fd: FormData, k: string, label = k) => {
   const raw = s(fd, k).replace(/[,\s]/g, "");
   return z.coerce
-    .number({ invalid_type_error: `${label} must be a number` })
-    .int(`${label} must be a whole number`)
+    .number({ error: `${label} must be a number` })
+    .int({ error: `${label} must be a whole number` })
     .parse(raw === "" ? NaN : raw);
 };
 const optInt = (fd: FormData, k: string, label = k) => (s(fd, k) === "" ? null : int(fd, k, label));
